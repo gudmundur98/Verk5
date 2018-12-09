@@ -1,0 +1,647 @@
+2 Events
+
+a)
+
+Hide on click
+
+document.getElementById('hider').onclick = function()
+{
+
+      document.getElementById('text').hidden = true;
+
+}
+
+Hide self
+
+<input type="button" onclick="this.hidden=true" value="Click to hide">
+
+Which handlers run?
+
+1 and 2
+
+Move the ball across the field
+
+field.onclick = function(event) {
+
+
+      // window-relative field coordinates
+
+      let fieldCoords = this.getBoundingClientRect();
+
+
+      // the ball has position:absolute, the field: position:relative
+
+      // so ball coordinates are relative to the field inner left-upper corner
+
+      let ballCoords = {
+
+        top: event.clientY - fieldCoords.top - field.clientTop - ball.clientHeight / 2,
+
+        left: event.clientX - fieldCoords.left - field.clientLeft - ball.clientWidth / 2
+
+      };
+
+
+      // prevent crossing the top field boundary
+
+      if (ballCoords.top < 0) ballCoords.top = 0;
+
+
+      // prevent crossing the left field boundary
+
+      if (ballCoords.left < 0) ballCoords.left = 0;
+
+
+
+      // // prevent crossing the right field boundary
+
+      if (ballCoords.left + ball.clientWidth > field.clientWidth) {
+
+        ballCoords.left = field.clientWidth - ball.clientWidth;
+
+      }
+
+      // prevent crossing the bottom field boundary
+
+      if (ballCoords.top + ball.clientHeight > field.clientHeight) {
+
+        ballCoords.top = field.clientHeight - ball.clientHeight;
+
+      }
+
+
+      ball.style.left = ballCoords.left + 'px';
+
+      ball.style.top = ballCoords.top + 'px';
+
+    }
+
+b)
+
+Hide messages with delegation
+
+container.onclick = function(event) {
+
+      if (event.target.className != 'remove-button') return;
+
+
+      let pane = event.target.closest('.pane');
+
+      pane.remove();
+
+    };
+
+Tree menu
+
+// move all text into <span>
+
+    // they occupy exactly the place necessary for the text,
+
+    for (let li of tree.querySelectorAll('li')) {
+
+      let span = document.createElement('span');
+
+      li.prepend(span);
+
+      span.append(span.nextSibling); // move the text node into span
+
+    }
+
+
+    // catch clicks on whole tree
+
+    tree.onclick = function(event) {
+
+
+      if (event.target.tagName != 'SPAN') {
+
+        return;
+
+      }
+
+
+      let childrenContainer = event.target.parentNode.querySelector('ul');
+
+      if (!childrenContainer) return; // no children
+
+
+      childrenContainer.hidden = !childrenContainer.hidden;
+
+    }
+
+Tooltip behavior
+
+let tooltipElem;
+
+
+    document.onmouseover = function(event) {
+
+      let target = event.target;
+
+
+      // if we have tooltip HTML...
+
+      let tooltipHtml = target.dataset.tooltip;
+
+      if (!tooltipHtml) return;
+
+
+      // ...create the tooltip element
+
+
+      tooltipElem = document.createElement('div');
+
+      tooltipElem.className = 'tooltip';
+
+      tooltipElem.innerHTML = tooltipHtml;
+
+      document.body.append(tooltipElem);
+
+
+      // position it above the annotated element (top-center)
+
+      let coords = target.getBoundingClientRect();
+
+
+      let left = coords.left + (target.offsetWidth - tooltipElem.offsetWidth) / 2;
+
+      if (left < 0) left = 0; // don't cross the left window edge
+
+
+      let top = coords.top - tooltipElem.offsetHeight - 5;
+
+      if (top < 0) { // if crossing the top window edge, show below instead
+
+        top = coords.top + target.offsetHeight + 5;
+      }
+
+
+      tooltipElem.style.left = left + 'px';
+
+      tooltipElem.style.top = top + 'px';
+    };
+
+
+    document.onmouseout = function(e) {
+
+
+      if (tooltipElem) {
+
+        tooltipElem.remove();
+
+        tooltipElem = null;
+
+      }
+
+
+    };
+
+c)
+
+Why "return false" doesn't work?
+
+function handler(event) {
+    alert("...");
+    event.preventDefault();
+  }
+
+Catch links in the element
+
+contents.onclick = function(event) {
+
+
+      function handleLink(href) {
+
+        let isLeaving = confirm(`Leave for ${href}?`);
+
+        if (!isLeaving) return false;
+
+      }
+
+
+      let target = event.target.closest('a');
+
+
+      if (target && contents.contains(target)) {
+
+        return handleLink(target.getAttribute('href'));
+
+      }
+
+    };
+
+Image gallery
+
+thumbs.onclick = function(event) {
+
+      let thumbnail = event.target.closest('a');
+
+
+      if (!thumbnail) return;
+
+      showThumbnail(thumbnail.href, thumbnail.title);
+
+      event.preventDefault();
+
+    }
+
+
+    function showThumbnail(href, title) {
+
+      largeImg.src = href;
+
+      largeImg.alt = title;
+
+    }
+
+d)
+
+ul.onclick = function(event) {
+
+      if (event.target.tagName != "LI") return;
+
+
+      if (event.ctrlKey || event.metaKey) {
+
+        toggleSelect(event.target);
+
+      } else {
+
+        singleSelect(event.target);
+
+      }
+
+
+    }
+
+
+    // prevent unneeded selection of list elements on clicks
+
+    ul.onmousedown = function() {
+
+      return false;
+
+    };
+
+
+    function toggleSelect(li) {
+
+      li.classList.toggle('selected');
+
+    }
+
+
+    function singleSelect(li) {
+
+      let selected = ul.querySelectorAll('.selected');
+
+      for(let elem of selected) {
+
+        elem.classList.remove('selected');
+
+      }
+
+      li.classList.add('selected');
+
+    }
+
+e)
+
+let tooltip;
+
+
+    document.onmouseover = function(event) {
+
+      // important: a fast-moving mouse may "jump" right to a child on an annotated node, skipping the parent
+
+      // so mouseover may happen on a child.
+
+
+      let anchorElem = event.target.closest('[data-tooltip]');
+
+
+      if (!anchorElem) return;
+
+
+      // show tooltip and remember it
+
+      tooltip = showTooltip(anchorElem, anchorElem.dataset.tooltip);
+
+    }
+
+
+    document.onmouseout = function() {
+
+      // it is possible that mouseout triggered, but we're still inside the element (cause of bubbling)
+
+      // but in this case we'll have an immediate mouseover,
+
+      // so the tooltip will be destroyed and shown again
+
+      //
+
+      // that's an overhead, but here it's not visible
+
+      // can be fixed with additional checks
+
+      if (tooltip) {
+
+        tooltip.remove();
+
+        tooltip = false;
+
+      }
+
+
+    }
+
+
+
+    function showTooltip(anchorElem, html) {
+
+      let tooltipElem = document.createElement('div');
+
+      tooltipElem.className = 'tooltip';
+
+      tooltipElem.innerHTML = html;
+
+      document.body.append(tooltipElem);
+
+
+      let coords = anchorElem.getBoundingClientRect();
+
+
+      // position the tooltip over the center of the element
+
+      let left = coords.left + (anchorElem.offsetWidth - tooltipElem.offsetWidth) / 2;
+
+      if (left < 0) left = 0;
+
+
+      let top = coords.top - tooltipElem.offsetHeight - 5;
+
+      if (top < 0) {
+
+        top = coords.top + anchorElem.offsetHeight + 5;
+
+      }
+
+
+      tooltipElem.style.left = left + 'px';
+
+      tooltipElem.style.top = top + 'px';
+
+
+      return tooltipElem;
+
+    }
+
+"Smart" tooltip
+
+// for the demo
+
+    setTimeout(function() {
+
+      new HoverIntent({
+
+        elem,
+
+        over() {
+
+          tooltip.style.left = elem.getBoundingClientRect().left + 5 + 'px';
+
+          tooltip.style.top = elem.getBoundingClientRect().bottom + 5 + 'px';
+
+          tooltip.hidden = false;
+
+        },
+
+        out() {
+
+          tooltip.hidden = true;
+
+        }
+
+      });
+
+    }, 2000);
+
+f)
+
+Create a Slider
+
+let thumb = slider.querySelector('.thumb');
+
+
+    thumb.onmousedown = function(event) {
+
+      event.preventDefault(); // prevent selection start (browser action)
+
+
+      let shiftX = event.clientX - thumb.getBoundingClientRect().left;
+
+      // shiftY not needed, the thumb moves only horizontally
+
+
+      document.addEventListener('mousemove', onMouseMove);
+
+      document.addEventListener('mouseup', onMouseUp);
+
+
+      function onMouseMove(event) {
+
+        let newLeft = event.clientX - shiftX - slider.getBoundingClientRect().left;
+
+
+        // the pointer is out of slider => lock the thumb within the bounaries
+
+        if (newLeft < 0) {
+
+          newLeft = 0;
+
+        }
+
+        let rightEdge = slider.offsetWidth - thumb.offsetWidth;
+
+        if (newLeft > rightEdge) {
+
+          newLeft = rightEdge;
+
+        }
+
+
+        thumb.style.left = newLeft + 'px';
+
+      }
+
+
+      function onMouseUp() {
+
+        document.removeEventListener('mouseup', onMouseUp);
+
+        document.removeEventListener('mousemove', onMouseMove);
+
+      }
+
+
+    };
+
+
+    thumb.ondragstart = function() {
+
+      return false;
+
+    };
+
+
+g)
+
+function runOnKeys(func, ...codes) {
+
+      let pressed = new Set();
+
+
+      document.addEventListener('keydown', function(event) {
+
+        pressed.add(event.code);
+
+
+        for (let code of codes) { // are all keys in the set?
+
+          if (!pressed.has(code)) {
+
+            return;
+
+          }
+
+        }
+
+
+        // yes, they are
+
+
+        // during the alert, if the visitor releases the keys,
+
+        // JavaScript does not get the "keyup" event
+
+        // and pressed set will keep assuming that the key is pressed
+
+        // so, to evade "sticky" keys, we reset the status
+
+        // if the user wants to run the hotkey again - let them press all keys again
+
+        pressed.clear();
+
+
+        func();
+
+      });
+
+
+      document.addEventListener('keyup', function(event) {
+
+        pressed.delete(event.code);
+
+      });
+
+
+    }
+
+
+    runOnKeys(
+
+      () => alert("Hello!"),
+
+      "KeyQ",
+
+      "KeyW"
+
+    );
+
+h)
+
+function preloadImages(sources, callback) {
+
+      let counter = 0;
+
+
+      function onLoad() {
+
+        counter++;
+
+        if (counter == sources.length) callback();
+
+      }
+
+
+      for(let source of sources) {
+
+        let img = document.createElement('img');
+
+        img.onload = img.onerror = onLoad;
+
+        img.src = source;
+
+      }
+
+    }
+
+
+    // ---------- The test ----------
+
+
+    let sources = [
+
+      "https://en.js.cx/images-load/1.jpg",
+
+      "https://en.js.cx/images-load/2.jpg",
+
+      "https://en.js.cx/images-load/3.jpg"
+
+    ];
+
+
+    // add random characters to prevent browser caching
+
+    for (let i = 0; i < sources.length; i++) {
+
+      sources[i] += '?' + Math.random();
+
+    }
+
+
+    // for each image,
+
+    // let's create another img with the same src and check that we have its width immediately
+
+    function testLoaded() {
+
+      let widthSum = 0;
+
+      for (let i = 0; i < sources.length; i++) {
+
+        let img = document.createElement('img');
+
+        img.src = sources[i];
+
+        widthSum += img.width;
+
+      }
+
+      alert(widthSum);
+
+    }
+
+
+    // should output 300
+
+    preloadImages(sources, testLoaded);
+
+
+
+
+
+
+
+
+

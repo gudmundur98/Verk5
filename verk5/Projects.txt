@@ -1,0 +1,48 @@
+1. Javascript Drum Kit
+
+<script>
+  function removeTransition(e) {
+    if (e.propertyName !== 'transform') return;
+    e.target.classList.remove('playing');// takes the word playing from the div being used
+  }
+  function playSound(e) {
+    const audio = document.querySelector(`audio[data-key="${e.keyCode}"]`);// if the user presses the varible audio becomes "65"
+
+    const key = document.querySelector(`div[data-key="${e.keyCode}"]`);//  if the user presses the varible key becomes "65"
+
+    if (!audio) return;//if there is no audio connected to the button pressed then, key = null
+
+    key.classList.add('playing');// adds "Playing" to the class "key" 
+
+    audio.currentTime = 0;// when you press any button the current audio playing stops.
+    
+    audio.play(); // spilar hljóðskránna sem er tengd við ákveðinn lykil á lyklaborðinu
+  }
+  const keys = Array.from(document.querySelectorAll('.key'));// creates array with all "keys"
+
+  keys.forEach(key => key.addEventListener('transitionend', removeTransition));// everytime the class key changes removeTransition runs.
+
+  window.addEventListener('keydown', playSound); // if any key is pressed the playSound function will run.
+</script>
+
+12. Key Sequence Detection
+
+const pressed = []; // creates the array pressed
+
+const secretCode = 'wesbos'; // this is what we are looking for as the secretCode
+
+window.addEventListener('keyup', (e) => {
+  console.log(e.key); // prints all keys that are pressed in the console
+  pressed.push(e.key);// adds any key that is pushed to the pressed array
+  pressed.splice(-secretCode.length - 1, pressed.length - secretCode.length);// the array can only be as big as the secret code.
+  if (pressed.join('').includes(secretCode)) { //makes the array be a string with no spaces and then checks if it is the same as the secretCode
+    console.log('DING DING!');// prints DING DING! if the strings match
+    cornify_add(); //adds unicorns (wtf?)
+  }
+  console.log(pressed);//array is printed every time a key is pressed
+});
+
+24. Sticky Nav
+
+
+

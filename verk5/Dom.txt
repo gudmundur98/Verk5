@@ -1,0 +1,498 @@
+1. DOM
+
+a)
+
+DOM children
+
+document.body.firstElementChild
+// or
+document.body.children[0]
+// or (the first node is space, so we take 2nd)
+document.body.childNodes[1]
+document.body.lastElementChild
+// or
+document.body.children[1]
+// get <ul>, and then get its last element child
+document.body.lastElementChild.lastElementChild
+
+The sibling Question	
+
+1. Yes, true. The element elem.lastChild is always the last one, it has no nextSibling, so if there are children, then yes.
+2. No, wrong, because elem.children[0] is the first child among elements. But there may be non-element nodes before it. So previousSibling may be a text node.
+
+Select all diagonal cells
+
+let table = document.body.firstElementChild;
+
+    
+for (let i = 0; i < table.rows.length; i++) 
+{
+      
+	let row = table.rows[i];
+      
+	row.cells[i].style.backgroundColor = 'red';
+    
+}
+
+b)
+
+// 1. The table with `id="age-table"`.
+let table = document.getElementById('age-table')
+
+// 2. All label elements inside that table
+table.getElementsByTagName('label')
+// or
+document.querySelectorAll('#age-table label')
+
+// 3. The first td in that table (with the word "Age").
+table.rows[0].cells[0]
+// or
+table.getElementsByTagName('td')[0]
+// or
+table.querySelector('td')
+
+// 4. The form with the name "search".
+// assuming there's only one element with name="search"
+let form = document.getElementsByName('search')[0]
+// or, form specifically
+document.querySelector('form[name="search"]')
+
+// 5. The first input in that form.
+form.getElementsByTagName('input')[0]
+// or
+form.querySelector('input')
+
+// 6. The last input in that form.
+// there's no direct query for that
+let inputs = form.querySelectorAll('input') // search all
+inputs[inputs.length-1] // take last
+
+c)
+
+Count descendants
+
+for (let li of document.querySelectorAll('li')) 
+{
+      
+	// get the title from the text node
+      
+	let title = li.firstChild.data;
+
+      
+	title = title.trim(); 
+	// remove extra spaces from ends
+
+      
+	// get the descendants count
+      
+	let count = li.getElementsByTagName('li').length;
+
+      
+	alert(title + ': ' + count);
+}
+
+Whats in the nodeType?
+
+At the time of <script> execution the last DOM node is exactly <script>, because the browser did not process the rest of the page yet.
+So the result is 1 (element node).
+
+Tag in comment
+
+The answer: BODY
+
+Where's the "document" in the hierarchy?
+
+document is an instance of HTMLDocument class.
+there’s a reference to the constructor function inside the prototype
+
+d)
+
+Get the attribute
+
+// getting it
+let elem = document.querySelector('[data-widget-name]');
+// reading the value
+alert(elem.dataset.widgetName);
+// or
+alert(elem.getAttribute('data-widget-name'));
+
+Make external links orange
+
+let selector = 'a[href*="://"]:not([href^="http://internal.com"])';
+    
+let links = document.querySelectorAll(selector);
+
+    
+links.forEach(link => link.style.color = 'orange');
+
+e)
+
+createTextNode vs innerHTML vs textContent
+
+let text = '<b>text</b>';
+elem1.append(document.createTextNode(text));
+elem2.textContent = text;
+elem3.innerHTML = text;
+
+Clear the element
+
+function clear(elem) {
+  while (elem.firstChild) {
+    elem.firstChild.remove();
+  }
+}
+
+Why does "aaa" remain?
+
+The HTML in the task is incorrect. That’s the reason of the odd thing.
+The browser has to fix it automatically. But there may be no text inside the <table>: according to the spec only table-specific tags are allowed. So the browser adds "aaa" before the <table>.
+Now it’s obvious that when we remove the table, it remains.
+The question can be easily answered by exploring the DOM using the browser tools. It shows "aaa" before the <table>.
+The HTML standard specifies in detail how to process bad HTML, and such behavior of the browser is correct.
+
+Create a list
+
+let ul = document.createElement('ul');
+    
+document.body.append(ul);
+
+    
+while (true) 
+{
+      
+	let data = prompt("Enter the text for the list item", "");
+
+      
+	if (!data) 
+	{
+        
+		break;
+      
+	}
+
+      
+	let li = document.createElement('li');
+      
+	li.textContent = data;
+      
+	ul.append(li);
+    
+}
+
+Create a tree from the object
+
+let data = 
+{
+      
+	"Fish": {
+        
+		"trout": {},
+        
+		"salmon": {}
+      
+	},
+
+      
+	"Tree": {
+        
+		"Huge": {
+          
+			"sequoia": {},
+          
+			"oak": {}
+        
+		},
+        
+		"Flowering": {
+          
+			"redbud": {},
+          
+			"magnolia": {}
+        
+		}
+      
+	}
+    
+};
+
+    
+function createTree(container, obj) 
+{
+      
+	container.innerHTML = createTreeText(obj);
+    
+}
+
+    
+function createTreeText(obj) { // standalone recursive function
+
+      	let li = '';
+
+      	for (let key in obj) 
+	{
+        
+		li += '<li>' + key + createTreeText(obj[key]) + '</li>';
+      
+	}
+
+      	if (li) 
+	{
+
+        	let ul = '<ul>' + li + '</ul>'
+
+      	}
+
+      	return ul || '';
+
+}
+
+
+createTree(container, data);
+
+Show descendants in a tree
+
+let lis = document.getElementsByTagName('li');
+
+    
+for (let li of lis) {
+
+      // get the count of all <li> below this <li>
+
+      let descendantsCount = li.getElementsByTagName('li').length;
+
+      if (!descendantsCount) continue;
+
+
+      // add directly to the text node (append to the text)
+
+      li.firstChild.data += ' [' + descendantsCount + ']';
+
+}
+
+Create a calendar
+
+function createCalendar(elem, year, month) 
+{
+
+
+      let mon = month - 1; // months in JS are 0..11, not 1..12
+
+      let d = new Date(year, mon);
+
+
+      let table = '<table><tr><th>MO</th><th>TU</th><th>WE</th><th>TH</th><th>FR</th><th>SA</th><th>SU</th></tr><tr>';
+
+
+      // spaces for the first row
+
+      // from Monday till the first day of the month
+
+      // * * * 1  2  3  4
+
+      for (let i = 0; i < getDay(d); i++) 
+	{
+        
+		table += '<td></td>';
+      
+	}
+
+
+      // <td> with actual dates
+
+      while (d.getMonth() == mon) {
+
+        table += '<td>' + d.getDate() + '</td>';
+        if (getDay(d) % 7 == 6) { // sunday, last day of week - newline
+
+          table += '</tr><tr>';
+        
+	}
+
+
+        d.setDate(d.getDate() + 1);
+
+      }
+
+
+      // add spaces after last days of month for the last row
+
+      // 29 30 31 * * * *
+
+      if (getDay(d) != 0) {
+
+        for (let i = getDay(d); i < 7; i++)
+ 	{
+
+          table += '<td></td>';
+
+        }
+
+      }
+
+
+      // close the table
+
+      table += '</tr></table>';
+
+
+      elem.innerHTML = table;
+
+    
+	}
+
+
+    function getDay(date)
+ 	{
+ 		// get day number from 0 (monday) to 6 (sunday)
+
+      		let day = date.getDay();
+
+      		if (day == 0) day = 7; // make Sunday (0) the last day
+
+      		return day - 1;
+
+    	}
+
+    
+	createCalendar(calendar, 2012, 9);
+
+f)
+
+function showNotification({top = 0, right = 0, className, html})
+ {
+
+
+      let notification = document.createElement('div');
+
+      notification.className = "notification";
+
+      if (className) {
+
+        notification.classList.add(className);
+
+      }
+
+
+      notification.style.top = top + 'px';
+
+      notification.style.right = right + 'px';
+
+
+      notification.innerHTML = html;
+
+      document.body.append(notification);
+
+
+      setTimeout(() => notification.remove(), 1500);
+
+    }
+
+
+    // test it
+
+    let i = 1;
+
+    setInterval(() => {
+
+      showNotification({
+
+        top: 10,
+
+        right: 10,
+
+        html: 'Hello ' + i++,
+
+        className: "welcome"
+
+      });
+
+    }, 2000);
+
+g)
+
+What's the scroll from the bottom?
+
+let scrollBottom = elem.scrollHeight - elem.scrollTop - elem.clientHeight;
+
+What is the scrollbar width?
+
+// create a div with the scroll
+let div = document.createElement('div');
+
+div.style.overflowY = 'scroll';
+div.style.width = '50px';
+div.style.height = '50px';
+
+// must put it in the document, otherwise sizes will be 0
+document.body.append(div);
+let scrollWidth = div.offsetWidth - div.clientWidth;
+
+div.remove();
+
+alert(scrollWidth);
+
+Place the ball in the field center
+
+// ball.offsetWidth=0 before image loaded!
+
+    // to fix: set width
+
+    ball.style.left = Math.round(field.clientWidth / 2 - ball.offsetWidth / 2) + 'px'
+
+    ball.style.top = Math.round(field.clientHeight / 2 - ball.offsetHeight / 2) + 'px'
+
+The difference: CSS width versus clientWidth
+
+Differences:
+
+1. clientWidth is numeric, while getComputedStyle(elem).width returns a string with px at the end.
+2. getComputedStyle may return non-numeric width like "auto" for an inline element.
+3. clientWidth is the inner content area of the element plus paddings, while CSS width (with standard box-sizing) is the inner content area without paddings.
+4. If there’s a scrollbar and the browser reserves the space for it, some browser substract that space from CSS width (cause it’s not available for content any more), and some do not. The clientWidth property is always the same: scrollbar size is substracted if reserved.
+
+h)
+
+Find window coordinates of the field
+
+let fieldCoords = field.getBoundingClientRect();
+
+    
+let answer = [
+
+      [ // 1
+
+        fieldCoords.left,
+
+        fieldCoords.top
+
+      ],
+
+      [ // 2
+
+        fieldCoords.right,
+
+        fieldCoords.bottom
+
+      ],
+
+      [ // 3
+
+        fieldCoords.left + field.clientLeft,
+
+        fieldCoords.top + field.clientTop
+
+      ],
+
+      [ // 4
+
+        fieldCoords.left + field.clientLeft + field.clientWidth,
+
+        fieldCoords.top + field.clientTop + field.clientHeight
+
+      ]
+
+    ];
+
+
+    alert(answer.join('  '));
+
